@@ -17,3 +17,7 @@ iiwa-2:
 wei:
   wei:
     path_to_data_directory: '/home/wei/data'
+
+alien:
+  kudo:
+    path_to_data_directory: '/media/kudo/Elements/data'

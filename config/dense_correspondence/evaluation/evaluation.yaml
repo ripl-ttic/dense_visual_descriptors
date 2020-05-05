@@ -4,8 +4,10 @@ params:
 
 networks:
   caterpillar_3:
-    path_to_network_params: trained_models/tutorials/caterpillar_3/003501.pth
-
+    path_to_network_params: /home/kudo/data/pdc/trained_models/tutorials/caterpillar_3/003000.pth    
+  pred_depth:
+    path_to_network_params: /home/kudo/data/pdc/trained_models/caterpillar/pred_depth_shoes_progress_actually_iterative_3/000375.pth
+    
 dataset: [] # which dataset to use, not used for now
 
 output_dir: analysis
