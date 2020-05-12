@@ -28,7 +28,7 @@ class PipeJoint:
         # manuly write configs, debug use only
         self.config = {}
         self.config['generate_dataset'] = {}
-        self.config['generate_dataset']['required'] = True
+        self.config['generate_dataset']['required'] = False
         self.config['generate_dataset']['generate_depth'] = True
         self.config['generate_dataset']['data_source'] = '../data/pdc'
         self.config['generate_dataset']['original_data'] = 'logs_proto_original'
@@ -51,6 +51,7 @@ class PipeJoint:
         self.config['train']['logging_dir'] = "trained_models/new_test_caterpillar/"
         self.config['train']['num_iterations'] = (1500/4)-1
         self.config['train']['dimension'] = 3
+        self.config['train']['dataset'] = None
 
         self.config['evaluate'] = {}
         self.config['evaluate']['required'] = True
@@ -100,6 +101,18 @@ class PipeJoint:
         
         if self.config['train']['required']:
             self.train_required = True
+            self.train_dataset_config_file = self.config['train']['dataset_config_file']
+            self.train_config_file = self.config['train']['train_config_file']
+            self.train_logging_dir = self.config['train']['logging_dir']
+            self.train_num_iterations = self.config['train']['num_iterations']
+            self.train_dimension = self.config['train']['dimension']
+            self.train_dataset = ''
+            if self.generate_dataset_required:
+                self.train_dataset = self.dataset_name
+            if self.config['train']['dataset'] is not None:
+                self.train_dataset = self.config['train']['dataset']
+            
+            
 
         if self.config['evaluate']['required']:
             self.evaluate_required = True
@@ -145,7 +158,12 @@ class PipeJoint:
         
         # training phase
         if self.train_required:
-            pass
+            train_dataset_config = utils.getDictFromYamlFilename(self.train_dataset_config_file)
+            train_dataset_config['logs_root_path'] = self.train_dataset
+            train_config = utils.getDictFromYamlFilename(self.train_config_file)
+
+            pdc_train(train_dataset_config, train_config, 
+                self.train_logging_dir, self.train_num_iterations, self.train_dimension)
         
         
         # evaluation phase

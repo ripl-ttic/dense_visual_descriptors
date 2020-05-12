@@ -12,7 +12,13 @@ generate_dataset:
   output_dir: null
   pose_data_path: ../data/pdc/poses
   replace_poses: false
-  required: true
+  required: false
   scaling_method: default_scaling
 train:
+  dataset: null
+  dataset_config_file: /home/kudo/code/config/dense_correspondence/dataset/composite/caterpillar_upright.yaml
+  dimension: 3
+  logging_dir: trained_models/new_test_caterpillar/
+  num_iterations: 374
   required: true
+  train_config_file: /home/kudo/code/config/dense_correspondence/training/training.yaml
