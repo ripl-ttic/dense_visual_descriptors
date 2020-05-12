@@ -419,6 +419,14 @@ class SpartanDataset(DenseCorrespondenceDataset):
         random_idx = random.choice(image_idxs)
         return random_idx
 
+    def get_next_img_idx(self, scene_name, idx):
+        pose_data = self.get_pose_data(scene_name)
+        image_idxs = pose_data.keys() # list of integers
+        # random.choice(image_idxs)
+        # random_idx = random.choice(image_idxs)
+        next_id = image_idxs.index(idx) + 1
+        return None if next_id == len(image_idxs) else image_idxs[next_id]
+
     def get_random_object_id(self):
         """
         Returns a random object_id
