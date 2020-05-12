@@ -1,0 +1,18 @@
+evaluate:
+  required: true
+generate_dataset:
+  data_source: ../data/pdc
+  ext: png
+  generate_depth: true
+  image_dir: null
+  meta_dir: null
+  model_path: ../data/pdc/depth_models/weights_199
+  no_cuda: false
+  original_data: logs_proto_original
+  output_dir: null
+  pose_data_path: ../data/pdc/poses
+  replace_poses: false
+  required: true
+  scaling_method: default_scaling
+train:
+  required: true
