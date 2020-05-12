@@ -14,43 +14,14 @@ logging.basicConfig(level=logging.INFO)
 
 from dense_correspondence.evaluation.evaluation import DenseCorrespondenceEvaluation
 
-config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-                               'dataset', 'composite', 'caterpillar_upright.yaml')
-config = utils.getDictFromYamlFilename(config_filename)
-
-train_config_file = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-                               'training', 'training.yaml')
-
-train_config = utils.getDictFromYamlFilename(train_config_file)
-dataset = SpartanDataset(config=config)
-
-logging_dir = "trained_models/caterpillar/"
-num_iterations = (1500/4)-1
-
-TRAIN = True
-EVALUATE = True
-
 # All of the saved data for this network will be located in the
 # code/data_volume/pdc/trained_models/tutorials/caterpillar_3 folder
 
+def pdc_train(dataset_config, train_config, logging_dir, num_iterations, dimension):
+    
+    dataset = SpartanDataset(config=dataset_config)
 
-### NON ITERATIVE
-
-if TRAIN:
-    # d = 2 # the descriptor dimension
-    # name = "same_scale_pred_depth_pred_pose_%d" %(d)
-    # train_config["training"]["logging_dir_name"] = name
-    # train_config["training"]["logging_dir"] = logging_dir
-    # train_config["dense_correspondence_network"]["descriptor_dimension"] = d
-    # train_config["training"]["num_iterations"] = num_iterations
-    # print "training descriptor of dimension %d" %(d)
-    # start_time = time.time()
-    # train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-    # train.run()
-    # end_time = time.time()
-    # print "finished training descriptor of dimension %d using time %.2f seconds" %(d, end_time-start_time)
-
-    d = 3 # the descriptor dimension
+    d = dimension # the descriptor dimension
     name = "no_scaling_pred_depth_gt_pose_%d" %(d)
     train_config["training"]["logging_dir_name"] = name
     train_config["training"]["logging_dir"] = logging_dir
@@ -63,67 +34,18 @@ if TRAIN:
     end_time = time.time()
     print "finished training descriptor of dimension %d using time %.2f seconds" %(d, end_time-start_time)
 
-    d = 4 # the descriptor dimension
-    name = "no_scaling_pred_depth_gt_pose_%d" %(d)
-    train_config["training"]["logging_dir_name"] = name
-    train_config["training"]["logging_dir"] = logging_dir
-    train_config["dense_correspondence_network"]["descriptor_dimension"] = d
-    train_config["training"]["num_iterations"] = num_iterations
-    print "training descriptor of dimension %d" %(d)
-    start_time = time.time()
-    train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-    train.run()
-    end_time = time.time()
-    print "finished training descriptor of dimension %d using time %.2f seconds" %(d, end_time-start_time)
 
-quit()
+if __name__ == '__main__':
+    dataset_config_file = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
+                               'dataset', 'composite', 'caterpillar_upright.yaml')
+    dataset_config = utils.getDictFromYamlFilename(dataset_config_file)
 
-### ITERATIVE
+    train_config_file = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
+                                'training', 'training.yaml')
+    train_config = utils.getDictFromYamlFilename(train_config_file)
 
+    logging_dir = "trained_models/caterpillar/"
+    num_iterations = (1500/4)-1
+    dimension = 3
 
-# # First 
-# config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-#                                'dataset', 'composite', 'shoe_train_1_green_nike.yaml')
-# config = utils.getDictFromYamlFilename(config_filename)
-# dataset = SpartanDataset(config=config)
-
-# print "training descriptor of dimension %d" %(d)
-# train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-# train.run()
-# print "finished training descriptor of dimension %d" %(d)
-
-# # Second 
-# config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-#                                'dataset', 'composite', 'shoe_train_1_gray_nike.yaml')
-# config = utils.getDictFromYamlFilename(config_filename)
-# dataset = SpartanDataset(config=config)
-
-# print "training descriptor of dimension %d" %(d)
-# train_config["training"]["logging_dir_name"] = name+"1"
-# train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-# train.run_from_pretrained("2018-10-15/"+name)
-# print "finished training descriptor of dimension %d" %(d)
-
-# # Third 
-# config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-#                                'dataset', 'composite', 'shoe_train_1_red_nike.yaml')
-# config = utils.getDictFromYamlFilename(config_filename)
-# dataset = SpartanDataset(config=config)
-
-# print "training descriptor of dimension %d" %(d)
-# train_config["training"]["logging_dir_name"] = name+"2"
-# train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-# train.run_from_pretrained("2018-10-15/"+name+"1")
-# print "finished training descriptor of dimension %d" %(d)
-
-# # Fourth
-# config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-#                                'dataset', 'composite', 'shoe_train_1_brown_boot.yaml')
-# config = utils.getDictFromYamlFilename(config_filename)
-# dataset = SpartanDataset(config=config)
-
-# print "training descriptor of dimension %d" %(d)
-# train_config["training"]["logging_dir_name"] = name+"3"
-# train = DenseCorrespondenceTraining(dataset=dataset, config=train_config)
-# train.run_from_pretrained("2018-10-15/"+name+"2")
-# print "finished training descriptor of dimension %d" %(d)
+    pdc_train(dataset_config, train_config, logging_dir, num_iterations, dimension)

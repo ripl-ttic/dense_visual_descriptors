@@ -2353,6 +2353,8 @@ class DenseCorrespondenceEvaluation(object):
         if dataset is None:
             dataset = dcn.load_training_dataset()
 
+        logging.info("evaluate on dataset {}".format(dataset._config["logs_root_path"]))
+
         # compute dataset statistics
         if compute_descriptor_statistics:
             logging.info("Computing descriptor statistics on dataset")

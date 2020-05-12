@@ -17,10 +17,10 @@ def parse_args():
                         help='number of image pairs to be evaulated', default=100)
     return parser.parse_args()
 
-def evaulate_model(args):
+def evaulate_model(model_dir, num_image_pairs):
     
-    model_dir = utils.convert_data_relative_path_to_absolute_path(args.model_dir)
-    num_image_pairs = args.num_image_pairs
+    model_dir = utils.convert_data_relative_path_to_absolute_path(model_dir)
+    num_image_pairs = num_image_pairs
     
     DCE = DenseCorrespondenceEvaluation
     d = model_dir
@@ -33,6 +33,7 @@ def evaulate_model(args):
 
     print(subdirs)
     for subdir in subdirs:
+        print("evaluate model {} on dataset {}".format(subdir, gt_dataset_config['logs_root_path']))
         start_time = time.time()
         DCE.run_evaluation_on_network(model_folder=subdir, num_image_pairs=num_image_pairs,dataset=gt_dataset)
         end_time = time.time()
@@ -40,6 +41,6 @@ def evaulate_model(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    evaulate_model(args)
-
-
+    model_dir = args.model_dir
+    num_image_pairs = args.num_image_pairs
+    evaulate_model(model_dir, num_image_pairs)

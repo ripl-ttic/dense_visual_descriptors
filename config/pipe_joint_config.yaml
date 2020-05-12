@@ -1,0 +1,24 @@
+evaluate:
+  required: true
+generate_dataset:
+  data_source: ../data/pdc
+  ext: png
+  generate_depth: true
+  image_dir: null
+  meta_dir: null
+  model_path: ../data/pdc/depth_models/weights_199
+  no_cuda: false
+  original_data: logs_proto_original
+  output_dir: null
+  pose_data_path: ../data/pdc/poses
+  replace_poses: false
+  required: false
+  scaling_method: default_scaling
+train:
+  dataset: null
+  dataset_config_file: /home/kudo/code/config/dense_correspondence/dataset/composite/caterpillar_upright.yaml
+  dimension: 3
+  logging_dir: trained_models/new_test_caterpillar/
+  num_iterations: 374
+  required: true
+  train_config_file: /home/kudo/code/config/dense_correspondence/training/training.yaml

@@ -16,3 +16,4 @@ tmp
 scratch
 .vscode
 pics
+.mypy_cache
