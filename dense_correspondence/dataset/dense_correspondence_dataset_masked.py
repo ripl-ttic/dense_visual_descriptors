@@ -98,7 +98,8 @@ class DenseCorrespondenceDataset(data.Dataset):
         metadata['image_a_idx'] = image_a_idx
 
         # image b
-        image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+        # image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+        image_b_idx = self.get_next_img_idx(scene_name, image_a_idx)
         metadata['image_b_idx'] = image_b_idx
         if image_b_idx is None:
             logging.info("no frame with sufficiently different pose found, returning")
