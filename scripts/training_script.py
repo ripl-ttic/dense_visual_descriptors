@@ -17,12 +17,20 @@ from dense_correspondence.evaluation.evaluation import DenseCorrespondenceEvalua
 # All of the saved data for this network will be located in the
 # code/data_volume/pdc/trained_models/tutorials/caterpillar_3 folder
 
-def pdc_train(dataset_config, train_config, logging_dir, num_iterations, dimension):
+def pdc_train(dataset_config, train_config, dataset_name, logging_dir, num_iterations, dimension):
+
+    # print("training args")
+    # print(dataset_config)
+    # print(train_config)
+    # print(dataset_name)
+    # print(logging_dir)
+    # print(num_iterations)
+    # print(dimension)
     
     dataset = SpartanDataset(config=dataset_config)
 
     d = dimension # the descriptor dimension
-    name = "no_scaling_pred_depth_gt_pose_%d" %(d)
+    name = dataset_name + "_%d" %(d)
     train_config["training"]["logging_dir_name"] = name
     train_config["training"]["logging_dir"] = logging_dir
     train_config["dense_correspondence_network"]["descriptor_dimension"] = d
@@ -39,13 +47,15 @@ if __name__ == '__main__':
     dataset_config_file = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
                                'dataset', 'composite', 'caterpillar_upright.yaml')
     dataset_config = utils.getDictFromYamlFilename(dataset_config_file)
+    dataset_config['logs_root_path'] = 'logs_proto_default_scaling_gt_pose'
 
     train_config_file = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
                                 'training', 'training.yaml')
     train_config = utils.getDictFromYamlFilename(train_config_file)
-
-    logging_dir = "trained_models/caterpillar/"
+    
+    dataset_name = "logs_proto_default_scaling_gt_pose"
+    logging_dir = "trained_models/new_test_caterpillar/"
     num_iterations = (1500/4)-1
     dimension = 3
 
-    pdc_train(dataset_config, train_config, logging_dir, num_iterations, dimension)
+    pdc_train(dataset_config, train_config, dataset_name[11:], logging_dir, num_iterations, dimension)

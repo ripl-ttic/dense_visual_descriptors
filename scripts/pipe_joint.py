@@ -1,4 +1,5 @@
 import dense_correspondence_manipulation.utils.utils as utils
+utils.add_dense_correspondence_to_python_path()
 from depth_generation import generate_depth_images
 from replace_poses import replace_poses
 from evaluate_script import evaulate_model
@@ -51,10 +52,14 @@ class PipeJoint:
         self.config['train']['logging_dir'] = "trained_models/new_test_caterpillar/"
         self.config['train']['num_iterations'] = (1500/4)-1
         self.config['train']['dimension'] = 3
-        self.config['train']['dataset'] = None
+        self.config['train']['dataset'] = "logs_proto_default_scaling_gt_pose"
 
         self.config['evaluate'] = {}
         self.config['evaluate']['required'] = True
+        self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3']
+        self.config['evaluate']['num_image_pairs'] = 100
+        self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
+
 
         # init start
         self.config_path = config_path
@@ -111,11 +116,12 @@ class PipeJoint:
                 self.train_dataset = self.dataset_name
             if self.config['train']['dataset'] is not None:
                 self.train_dataset = self.config['train']['dataset']
-            
-            
 
         if self.config['evaluate']['required']:
             self.evaluate_required = True
+            self.eval_model_lst = self.config['evaluate']['model_lst']
+            self.eval_num_image_pairs = self.config['evaluate']['num_image_pairs'] = 100
+            self.eval_gt_dataset_config_file = self.config['evaluate']['gt_dataset_config_file']
 
     def get_config(self, verbose=False):
         if verbose:
@@ -162,13 +168,14 @@ class PipeJoint:
             train_dataset_config['logs_root_path'] = self.train_dataset
             train_config = utils.getDictFromYamlFilename(self.train_config_file)
 
-            pdc_train(train_dataset_config, train_config, 
+            pdc_train(train_dataset_config, train_config, self.train_dataset[11:],
                 self.train_logging_dir, self.train_num_iterations, self.train_dimension)
         
         
         # evaluation phase
-        # if self.evaluate_required:
-        #     evaulate_model()
+        if self.evaluate_required:
+            self.gt_dataset_config = utils.getDictFromYamlFilename(self.eval_gt_dataset_config_file)
+            evaulate_model(self.eval_model_lst, self.num_image_pairs, self.gt_dataset_config)
 
 if __name__ == '__main__':
     args = parse_args()
@@ -179,8 +186,6 @@ if __name__ == '__main__':
 
 
 # TODOs:
-# 1. automate data copy and dataset naming
-# 2. experiment config save
-# 3. objectize train module
-# 4. objectize evalute module
-# 5. quantitative evaluation
+# 1. improve save_log function 
+# 2. readme on how to use
+# 3. quantitative evaluation

@@ -1,4 +1,8 @@
 evaluate:
+  gt_dataset_config_file: /home/kudo/code/config/dense_correspondence/evaluation/gt_dataset.yaml
+  model_lst:
+  - trained_models/new_test_caterpillar/default_scaling_gt_pose_3
+  num_image_pairs: 100
   required: true
 generate_dataset:
   data_source: ../data/pdc
@@ -15,7 +19,7 @@ generate_dataset:
   required: false
   scaling_method: default_scaling
 train:
-  dataset: null
+  dataset: logs_proto_default_scaling_gt_pose
   dataset_config_file: /home/kudo/code/config/dense_correspondence/dataset/composite/caterpillar_upright.yaml
   dimension: 3
   logging_dir: trained_models/new_test_caterpillar/

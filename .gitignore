@@ -16,4 +16,4 @@ tmp
 scratch
 .vscode
 pics
-.mypy_cache
+.mypy_cache/

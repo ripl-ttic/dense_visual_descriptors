@@ -12,27 +12,20 @@ def parse_args():
 
     parser.add_argument('--model_dir', type=str,
                         help='relative path to a folder of models',
-                        default='../data/pdc/trained_models/caterpillar')
+                        default='trained_models/new_test_caterpillar')
     parser.add_argument('--num_image_pairs', type=int,
                         help='number of image pairs to be evaulated', default=100)
     return parser.parse_args()
 
-def evaulate_model(model_dir, num_image_pairs):
+def evaulate_model(model_lst, num_image_pairs, gt_dataset_config):
+
+    gt_dataset = SpartanDataset(config_expanded=gt_dataset_config)
     
-    model_dir = utils.convert_data_relative_path_to_absolute_path(model_dir)
     num_image_pairs = num_image_pairs
     
     DCE = DenseCorrespondenceEvaluation
-    d = model_dir
-    subdirs = [os.path.join(d, o) for o in os.listdir(d) 
-                    if os.path.isdir(os.path.join(d,o))]
 
-    gt_dataset_config_filename = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
-    gt_dataset_config = utils.getDictFromYamlFilename(gt_dataset_config_filename)
-    gt_dataset = SpartanDataset(config_expanded=gt_dataset_config)
-
-    print(subdirs)
-    for subdir in subdirs:
+    for subdir in model_lst:
         print("evaluate model {} on dataset {}".format(subdir, gt_dataset_config['logs_root_path']))
         start_time = time.time()
         DCE.run_evaluation_on_network(model_folder=subdir, num_image_pairs=num_image_pairs,dataset=gt_dataset)
@@ -43,4 +36,13 @@ if __name__ == '__main__':
     args = parse_args()
     model_dir = args.model_dir
     num_image_pairs = args.num_image_pairs
-    evaulate_model(model_dir, num_image_pairs)
+    gt_dataset_config_file = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
+    # gt_dataset_config_file = '/home/kudo/data/pdc/trained_models/new_test_caterpillar/default_scaling_gt_pose_3/dataset.yaml'
+    gt_dataset_config = utils.getDictFromYamlFilename(gt_dataset_config_file)
+
+    abs_model_dir = utils.convert_data_relative_path_to_absolute_path(model_dir)
+    d = abs_model_dir
+    model_lst = [model_dir + '/' + o for o in os.listdir(d) if os.path.isdir(os.path.join(d,o))]
+    print("model list")
+    print(model_lst)
+    evaulate_model(model_lst, num_image_pairs, gt_dataset_config)
