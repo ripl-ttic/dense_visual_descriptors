@@ -4,6 +4,8 @@ evaluate:
   - trained_models/new_test_caterpillar/default_scaling_gt_pose_3
   num_image_pairs: 100
   required: true
+experiments:
+  as_experiment: true
 generate_dataset:
   data_source: ../data/pdc
   ext: png
@@ -24,5 +26,5 @@ train:
   dimension: 3
   logging_dir: trained_models/new_test_caterpillar/
   num_iterations: 374
-  required: true
+  required: false
   train_config_file: /home/kudo/code/config/dense_correspondence/training/training.yaml

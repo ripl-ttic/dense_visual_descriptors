@@ -2307,6 +2307,7 @@ class DenseCorrespondenceEvaluation(object):
     @staticmethod
     def run_evaluation_on_network(model_folder, num_image_pairs=100,
                                   num_matches_per_image_pair=100,
+                                  output_dir=None,
                                   save_folder_name="analysis",
                                   compute_descriptor_statistics=True, 
                                   cross_scene=True,
@@ -2336,7 +2337,8 @@ class DenseCorrespondenceEvaluation(object):
         model_folder = utils.convert_data_relative_path_to_absolute_path(model_folder, assert_path_exists=True)
 
         # save it to a csv file
-        output_dir = os.path.join(model_folder, save_folder_name)
+        if output_dir is None:
+            output_dir = os.path.join(model_folder, save_folder_name)
         train_output_dir = os.path.join(output_dir, "train")
         test_output_dir = os.path.join(output_dir, "test")
         cross_scene_output_dir = os.path.join(output_dir, "cross_scene")

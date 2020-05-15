@@ -9,6 +9,7 @@ import argparse
 import shutil
 import os
 import time
+from datetime import datetime
 
 
 def parse_args():
@@ -44,7 +45,7 @@ class PipeJoint:
         self.config['generate_dataset']['pose_data_path'] = '../data/pdc/poses'
         
         self.config['train'] = {}
-        self.config['train']['required'] = True
+        self.config['train']['required'] = False
         self.config['train']['dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
                                'dataset', 'composite', 'caterpillar_upright.yaml')
         self.config['train']['train_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
@@ -60,12 +61,17 @@ class PipeJoint:
         self.config['evaluate']['num_image_pairs'] = 100
         self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
 
+        self.config['experiments'] = {}
+        self.config['experiments']['as_experiment'] = True
 
         # init start
         self.config_path = config_path
         # self.config = utils.getDictFromYamlFilename(config_path)
 
-        if self.config['generate_dataset']['required']:
+        # configs about dataset generation
+        if not self.config['generate_dataset']['required']:
+            self.generate_dataset_required = False
+        else:
             self.generate_dataset_required = True
             if self.config['generate_dataset']['generate_depth']:
                 self.generate_depth_required = True
@@ -101,10 +107,11 @@ class PipeJoint:
 
             if self.meta_dir is None:
                 self.meta_dir = os.path.join(self.data_source, self.dataset_name)
+            
+        # configs about training phase
+        if not self.config['train']['required']:
+            self.train_required = False
         else:
-            self.generate_dataset_required = False
-        
-        if self.config['train']['required']:
             self.train_required = True
             self.train_dataset_config_file = self.config['train']['dataset_config_file']
             self.train_config_file = self.config['train']['train_config_file']
@@ -117,11 +124,18 @@ class PipeJoint:
             if self.config['train']['dataset'] is not None:
                 self.train_dataset = self.config['train']['dataset']
 
-        if self.config['evaluate']['required']:
+        # configs about evaluation phase
+        if not self.config['evaluate']['required']:
+            self.evaluate_required = False
+        else:
             self.evaluate_required = True
             self.eval_model_lst = self.config['evaluate']['model_lst']
             self.eval_num_image_pairs = self.config['evaluate']['num_image_pairs'] = 100
             self.eval_gt_dataset_config_file = self.config['evaluate']['gt_dataset_config_file']
+
+        # configs about experiment phase
+        self.as_experiment = self.config['experiments']['as_experiment']
+
 
     def get_config(self, verbose=False):
         if verbose:
@@ -174,13 +188,22 @@ class PipeJoint:
         
         # evaluation phase
         if self.evaluate_required:
-            self.gt_dataset_config = utils.getDictFromYamlFilename(self.eval_gt_dataset_config_file)
-            evaulate_model(self.eval_model_lst, self.num_image_pairs, self.gt_dataset_config)
+            if not self.as_experiment:
+                evaulate_model(model_lst=self.eval_model_lst, 
+                    num_image_pairs=self.eval_num_image_pairs)
+            else:
+                self.gt_dataset_config = utils.getDictFromYamlFilename(self.eval_gt_dataset_config_file)
+                self.current_timestamp = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
+                self.exp_dir = 'experiments/exp_' + self.current_timestamp
+                evaulate_model(model_lst=self.eval_model_lst, output_dir=self.exp_dir,
+                    num_image_pairs=self.eval_num_image_pairs, 
+                    gt_dataset_config=self.gt_dataset_config)
+
 
 if __name__ == '__main__':
     args = parse_args()
     pipe_joint = PipeJoint(args.config_path)
-    pipe_joint.save_config()
+    pipe_joint.save_config() 
     pipe_joint.get_config(verbose=True)
     pipe_joint.execute()
 
