@@ -38,7 +38,7 @@ class PipeJoint:
         self.config['generate_dataset']['image_dir'] = None
         self.config['generate_dataset']['output_dir'] = None
         self.config['generate_dataset']['model_path'] = '../data/pdc/depth_models/weights_199'
-        self.config['generate_dataset']['scaling_method'] = 'default_scaling'
+        self.config['generate_dataset']['scaling_method'] = 'unit_scaling'
         self.config['generate_dataset']['ext'] = 'png'
         self.config['generate_dataset']['no_cuda'] = False
         self.config['generate_dataset']['replace_poses'] = False
@@ -53,11 +53,12 @@ class PipeJoint:
         self.config['train']['logging_dir'] = "trained_models/new_test_caterpillar/"
         self.config['train']['num_iterations'] = (1500/4)-1
         self.config['train']['dimension'] = 3
-        self.config['train']['dataset'] = "logs_proto_default_scaling_gt_pose"
+        # self.config['train']['dataset'] = "logs_proto_original"
+        self.config['train']['dataset'] = None
 
         self.config['evaluate'] = {}
         self.config['evaluate']['required'] = True
-        self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3']
+        self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3','trained_models/new_test_caterpillar/original_3','trained_models/new_test_caterpillar/unit_scaling_gt_pose_3']
         self.config['evaluate']['num_image_pairs'] = 100
         self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
 
@@ -143,8 +144,11 @@ class PipeJoint:
         return self.config
 
 
-    def save_config(self):
-        utils.saveToYaml(self.config, self.config_path)
+    def save_config(self, config_path=None):
+        if config_path is None:
+            utils.saveToYaml(self.config, self.config_path)
+        else:
+            utils.saveToYaml(self.config, config_path)
 
 
     def execute(self):
@@ -192,12 +196,16 @@ class PipeJoint:
                 evaulate_model(model_lst=self.eval_model_lst, 
                     num_image_pairs=self.eval_num_image_pairs)
             else:
+                # experiment mode
                 self.gt_dataset_config = utils.getDictFromYamlFilename(self.eval_gt_dataset_config_file)
                 self.current_timestamp = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
                 self.exp_dir = 'experiments/exp_' + self.current_timestamp
                 evaulate_model(model_lst=self.eval_model_lst, output_dir=self.exp_dir,
                     num_image_pairs=self.eval_num_image_pairs, 
                     gt_dataset_config=self.gt_dataset_config)
+
+                experiment_config_path = os.path.join(utils.get_data_dir(), self.exp_dir, 'config.yaml')
+                self.save_config(experiment_config_path)
 
 
 if __name__ == '__main__':
