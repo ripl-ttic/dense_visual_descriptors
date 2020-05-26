@@ -237,6 +237,8 @@ class DenseCorrespondenceDataset(data.Dataset):
         rgb = self.get_rgb_image(rgb_file)
 
         depth_file = self.get_image_filename(scene_name, img_idx, ImageType.DEPTH)
+        # print('depth_file_path')
+        # print(depth_file)
         depth = self.get_depth_image(depth_file)
 
         mask_file = self.get_image_filename(scene_name, img_idx, ImageType.MASK)

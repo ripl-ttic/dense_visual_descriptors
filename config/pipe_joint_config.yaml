@@ -2,8 +2,10 @@ evaluate:
   gt_dataset_config_file: /home/kudo/code/config/dense_correspondence/evaluation/gt_dataset.yaml
   model_lst:
   - trained_models/new_test_caterpillar/default_scaling_gt_pose_3
+  - trained_models/new_test_caterpillar/original_3
+  - trained_models/new_test_caterpillar/unit_scaling_gt_pose_3
   num_image_pairs: 100
-  required: true
+  required: false
 experiments:
   as_experiment: true
 generate_dataset:
@@ -16,15 +18,17 @@ generate_dataset:
   no_cuda: false
   original_data: logs_proto_original
   output_dir: null
+  output_target: rendered_images
   pose_data_path: ../data/pdc/poses
   replace_poses: false
   required: false
   scaling_method: default_scaling
+  zero_masked: false
 train:
-  dataset: logs_proto_default_scaling_gt_pose
+  dataset: experiments/exp_05262020-174446/logs_proto_default_scaling_gt_pose
   dataset_config_file: /home/kudo/code/config/dense_correspondence/dataset/composite/caterpillar_upright.yaml
   dimension: 3
-  logging_dir: trained_models/new_test_caterpillar/
+  logging_dir: trained_models/new_new_test_caterpillar/
   num_iterations: 374
-  required: false
+  required: true
   train_config_file: /home/kudo/code/config/dense_correspondence/training/training.yaml

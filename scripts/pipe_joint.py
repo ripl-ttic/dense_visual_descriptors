@@ -35,29 +35,34 @@ class PipeJoint:
         self.config['generate_dataset']['data_source'] = '../data/pdc'
         self.config['generate_dataset']['original_data'] = 'logs_proto_original'
         self.config['generate_dataset']['meta_dir'] = None
+        self.config['generate_dataset']['output_target'] = 'rendered_images'
         self.config['generate_dataset']['image_dir'] = None
         self.config['generate_dataset']['output_dir'] = None
         self.config['generate_dataset']['model_path'] = '../data/pdc/depth_models/weights_199'
-        self.config['generate_dataset']['scaling_method'] = 'unit_scaling'
+        self.config['generate_dataset']['scaling_method'] = 'default_scaling'
+        self.config['generate_dataset']['zero_masked'] = False
         self.config['generate_dataset']['ext'] = 'png'
         self.config['generate_dataset']['no_cuda'] = False
         self.config['generate_dataset']['replace_poses'] = False
         self.config['generate_dataset']['pose_data_path'] = '../data/pdc/poses'
         
         self.config['train'] = {}
-        self.config['train']['required'] = False
+        self.config['train']['required'] = True
         self.config['train']['dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
                                'dataset', 'composite', 'caterpillar_upright.yaml')
         self.config['train']['train_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
                                 'training', 'training.yaml')
-        self.config['train']['logging_dir'] = "trained_models/new_test_caterpillar/"
+        self.config['train']['logging_dir'] = "trained_models/new_new_test_caterpillar/"
         self.config['train']['num_iterations'] = (1500/4)-1
         self.config['train']['dimension'] = 3
         # self.config['train']['dataset'] = "logs_proto_original"
-        self.config['train']['dataset'] = None
+        self.config['train']['dataset'] = "experiments/exp_05262020-174446/logs_proto_default_scaling_gt_pose"
+        # self.config['train']['dataset'] = "logs_proto_unit_scaling_gt_pose"
+        # self.config['train']['dataset'] = "logs_proto_default_scaling_gt_pose"
+        # self.config['train']['dataset'] = None
 
         self.config['evaluate'] = {}
-        self.config['evaluate']['required'] = True
+        self.config['evaluate']['required'] = False
         self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3','trained_models/new_test_caterpillar/original_3','trained_models/new_test_caterpillar/unit_scaling_gt_pose_3']
         self.config['evaluate']['num_image_pairs'] = 100
         self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
@@ -69,6 +74,13 @@ class PipeJoint:
         self.config_path = config_path
         # self.config = utils.getDictFromYamlFilename(config_path)
 
+        # configs about experiment phase
+        self.as_experiment = self.config['experiments']['as_experiment']
+        # create experiment folder if needed
+        if self.as_experiment:
+            self.current_timestamp = datetime.now().strftime("%m%d%Y-%H%M%S")
+            self.exp_dir = 'experiments/exp_' + self.current_timestamp
+
         # configs about dataset generation
         if not self.config['generate_dataset']['required']:
             self.generate_dataset_required = False
@@ -79,10 +91,12 @@ class PipeJoint:
                 self.data_source = self.config['generate_dataset']['data_source']
                 self.original_data = self.config['generate_dataset']['original_data']
                 self.meta_dir = self.config['generate_dataset']['meta_dir']
+                self.output_target = self.config['generate_dataset']['output_target']
                 self.image_dir = self.config['generate_dataset']['image_dir']
                 self.output_dir = self.config['generate_dataset']['output_dir']
                 self.model_path = self.config['generate_dataset']['model_path']
                 self.scaling_method = self.config['generate_dataset']['scaling_method']
+                self.zero_masked = self.config['generate_dataset']['zero_masked']
                 self.ext = self.config['generate_dataset']['ext']
                 self.no_cuda = self.config['generate_dataset']['no_cuda']
             else:
@@ -106,6 +120,9 @@ class PipeJoint:
             else:
                 self.dataset_name += 'gt_pose'
 
+            if self.as_experiment:
+                self.dataset_name = self.exp_dir + '/' + self.dataset_name
+
             if self.meta_dir is None:
                 self.meta_dir = os.path.join(self.data_source, self.dataset_name)
             
@@ -125,6 +142,9 @@ class PipeJoint:
             if self.config['train']['dataset'] is not None:
                 self.train_dataset = self.config['train']['dataset']
 
+            if self.as_experiment:
+                self.train_logging_dir = self.exp_dir + '/trained_models' 
+
         # configs about evaluation phase
         if not self.config['evaluate']['required']:
             self.evaluate_required = False
@@ -133,9 +153,6 @@ class PipeJoint:
             self.eval_model_lst = self.config['evaluate']['model_lst']
             self.eval_num_image_pairs = self.config['evaluate']['num_image_pairs'] = 100
             self.eval_gt_dataset_config_file = self.config['evaluate']['gt_dataset_config_file']
-
-        # configs about experiment phase
-        self.as_experiment = self.config['experiments']['as_experiment']
 
 
     def get_config(self, verbose=False):
@@ -166,8 +183,8 @@ class PipeJoint:
 
                 print("start generating depth images")
                 start_time = time.time()
-                generate_depth_images(self.model_path, self.scaling_method, 
-                    self.ext, self.no_cuda, self.meta_dir, self.image_dir, self.output_dir)
+                generate_depth_images(self.model_path, self.scaling_method, self.zero_masked,
+                    self.ext, self.no_cuda, self.meta_dir, self.output_target, self.image_dir, self.output_dir)
                 end_time = time.time()
                 print('generating depth images using {}s'.format(end_time - start_time))
 
@@ -178,7 +195,6 @@ class PipeJoint:
                 replace_poses(self.pose_data_path, self.logs_proto_path)
                 end_time = time.time()
                 print('replacing poses takes {}s'.format(end_time - start_time))
-
         
         # training phase
         if self.train_required:
@@ -189,7 +205,6 @@ class PipeJoint:
             pdc_train(train_dataset_config, train_config, self.train_dataset[11:],
                 self.train_logging_dir, self.train_num_iterations, self.train_dimension)
         
-        
         # evaluation phase
         if self.evaluate_required:
             if not self.as_experiment:
@@ -198,14 +213,15 @@ class PipeJoint:
             else:
                 # experiment mode
                 self.gt_dataset_config = utils.getDictFromYamlFilename(self.eval_gt_dataset_config_file)
-                self.current_timestamp = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-                self.exp_dir = 'experiments/exp_' + self.current_timestamp
+                
                 evaulate_model(model_lst=self.eval_model_lst, output_dir=self.exp_dir,
                     num_image_pairs=self.eval_num_image_pairs, 
-                    gt_dataset_config=self.gt_dataset_config)
-
-                experiment_config_path = os.path.join(utils.get_data_dir(), self.exp_dir, 'config.yaml')
-                self.save_config(experiment_config_path)
+                    gt_dataset_config=self.gt_dataset_config)     
+                
+        # save experiment config        
+        if self.as_experiment:
+            experiment_config_path = os.path.join(utils.get_data_dir(), self.exp_dir, 'config.yaml')
+            self.save_config(experiment_config_path)
 
 
 if __name__ == '__main__':

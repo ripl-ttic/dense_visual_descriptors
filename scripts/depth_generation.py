@@ -48,11 +48,13 @@ def parse_args():
     #                         "mono+stereo_1024x320"])
     parser.add_argument('--model_path', type=str,
                         help='path of the model to use')
-
     parser.add_argument('--scaling_method', type=str, 
                         help='the scaling method when converting disparity image to depth image',
                         choices=['default_scaling','unit_scaling'],
                         default='default_scaling')
+    parser.add_argument('--zero_masked', 
+                        help='if mask out zeros in ground truth depth image',
+                        action='store_true')
     parser.add_argument('--ext', type=str,
                         help='image extension to search for in folder', default="png")
     parser.add_argument("--no_cuda",
@@ -74,7 +76,7 @@ def disp_to_depth(disp, min_depth, max_depth):
     return scaled_disp, depth
 
 
-def generate_depth_images_for_a_single_folder(image_dir, output_dir, model_path, scaling_method, ext, no_cuda):
+def generate_depth_images_for_a_single_folder(image_dir, output_dir, model_path, scaling_method, zero_masked, ext, no_cuda):
     """Function to predict for a single image or folder of images
     """
     # assert args.model_name is not None, \
@@ -189,35 +191,38 @@ def generate_depth_images_for_a_single_folder(image_dir, output_dir, model_path,
 
             # name_dest_im = os.path.join(output_dir, "{}_disp.png".format(output_name))
             # im.save(name_dest_im)
-            
-    
-            # Get ground truth depth from data
-            gt_depth_image_path = os.path.join(image_dir, "{}_depth.png".format(output_name[:6]))
-            gt_depth_image = Image.open(gt_depth_image_path)
-            gt_depth_np = np.array(gt_depth_image)
-            # sorted_np_depth_lst = sorted(list(set(np_gt_depth.reshape(-1))))
-            
-            # non_zero_min_depth = sorted_np_depth_lst[1]
-            # max_depth = sorted_np_depth_lst[-1]
-            
+
             disp_resized_np = disp_resized.squeeze().cpu().numpy()
             _, pred_depth_np = disp_to_depth(disp_resized_np, MIN_DEPTH, MAX_DEPTH)
+            
+            if zero_masked:
+                # Get ground truth depth from data
+                gt_depth_image_path = os.path.join(image_dir, "{}_depth.png".format(output_name[:6]))
+                gt_depth_image = Image.open(gt_depth_image_path)
+                gt_depth_np = np.array(gt_depth_image)
+                # sorted_np_depth_lst = sorted(list(set(np_gt_depth.reshape(-1))))
+            
+                # non_zero_min_depth = sorted_np_depth_lst[1]
+                # max_depth = sorted_np_depth_lst[-1]
+            
+                nonzero_mask = gt_depth_np > 0
+                zero_mask = gt_depth_np == 0
 
-            
-            nonzero_mask = gt_depth_np > 0
-            zero_mask = gt_depth_np == 0
+                nonzero_pred_depth_np = pred_depth_np[nonzero_mask]
+                nonzero_gt_depth_np = gt_depth_np[nonzero_mask]
+                
+                # Median Scaling
+                # ratio = np.median(nonzero_gt_depth_np) / np.median(nonzero_pred_depth_np)
+                # pred_depth_np *= ratio
+                
+                pred_depth_np = np.where(zero_mask, 0, pred_depth_np)
 
-            nonzero_pred_depth_np = pred_depth_np[nonzero_mask]
-            nonzero_gt_depth_np = gt_depth_np[nonzero_mask]
-            
-            # Median Scaling
-            # ratio = np.median(nonzero_gt_depth_np) / np.median(nonzero_pred_depth_np)
-            # pred_depth_np *= ratio
-            
-            masked_pred_depth_np = np.where(zero_mask, 0, pred_depth_np)
+                # print('generated depth')
+                # print(masked_pred_depth_np)
+                # print(np.max(masked_pred_depth_np))
             
             # Saving single channel depth image
-            im = pil.fromarray(masked_pred_depth_np)
+            im = pil.fromarray(pred_depth_np)
             im = im.convert('I')
             
             name_dest_im = os.path.join(output_dir, "{}_depth.png".format(output_name[:6]))
@@ -230,7 +235,7 @@ def generate_depth_images_for_a_single_folder(image_dir, output_dir, model_path,
     
     
     
-def generate_depth_images(model_path, scaling_method, ext, no_cuda, meta_dir=None, image_dir=None, output_dir=None):
+def generate_depth_images(model_path, scaling_method, zero_masked=False, ext='png', no_cuda=False, meta_dir=None, output_target='rendered_images',image_dir=None, output_dir=None):
     
     assert bool((image_dir is not None) and (output_dir is not None)) != bool(meta_dir is not None), "either input meta directory or (image_dir and output_dir)"
     
@@ -252,9 +257,15 @@ def generate_depth_images(model_path, scaling_method, ext, no_cuda, meta_dir=Non
         for folder in folders:
             image_dir = os.path.join(folder, "processed", "images")
             # output_dir = os.path.join(".","depth_output","tests")
-            output_dir = image_dir
+            if output_target == 'rendered_images':
+                output_dir = image_dir = os.path.join(folder, "processed", "rendered_images")
+            elif output_target == 'images':
+                output_dir = image_dir = os.path.join(folder, "processed", "images")
+            else:
+                print('Invalid output target')
             
-            generate_depth_images_for_a_single_folder(image_dir, output_dir, model_path, scaling_method, ext, no_cuda)
+            generate_depth_images_for_a_single_folder(image_dir, output_dir, 
+                model_path, scaling_method, zero_masked, ext, no_cuda)
             
 
 if __name__ == '__main__':
@@ -265,7 +276,8 @@ if __name__ == '__main__':
     output_dir = args.output_dir
     model_path = args.model_path
     scaling_method = args.scaling_method
+    zero_masked = args.zero_masked
     ext = args.ext
     no_cuda = args.no_cuda
 
-    generate_depth_images(model_path, scaling_method, ext, no_cuda, meta_dir, image_dir, output_dir)
+    generate_depth_images(model_path, scaling_method, zero_masked, ext, no_cuda, meta_dir, image_dir, output_dir)

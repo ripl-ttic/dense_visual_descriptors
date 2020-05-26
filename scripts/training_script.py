@@ -26,12 +26,18 @@ def pdc_train(dataset_config, train_config, dataset_name, logging_dir, num_itera
     # print(logging_dir)
     # print(num_iterations)
     # print(dimension)
-    
+    print('dataset_name')
+    print(dataset_name)
+
     dataset = SpartanDataset(config=dataset_config)
 
     d = dimension # the descriptor dimension
-    name = dataset_name + "_%d" %(d)
+    name = dataset_name.split('/')[-1] + "_%d" %(d)
     train_config["training"]["logging_dir_name"] = name
+
+    print('logging dir name')
+    print(name)
+
     train_config["training"]["logging_dir"] = logging_dir
     train_config["dense_correspondence_network"]["descriptor_dimension"] = d
     train_config["training"]["num_iterations"] = num_iterations

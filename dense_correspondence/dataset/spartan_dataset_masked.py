@@ -650,6 +650,9 @@ class SpartanDataset(DenseCorrespondenceDataset):
 
         image_a_depth_numpy = np.asarray(image_a_depth)
         image_b_depth_numpy = np.asarray(image_b_depth)
+        # print('depth')
+        # print(image_a_depth_numpy)
+        # print(np.max(image_a_depth))
 
         if self.sample_matches_only_off_mask:
             correspondence_mask = np.asarray(image_a_mask)
