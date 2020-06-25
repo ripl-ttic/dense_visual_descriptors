@@ -1,9 +1,11 @@
 evaluate:
   gt_dataset_config_file: /home/kudo/code/config/dense_correspondence/evaluation/gt_dataset.yaml
   model_lst:
-  - trained_models/new_test_caterpillar/default_scaling_gt_pose_3
-  - trained_models/new_test_caterpillar/original_3
-  - trained_models/new_test_caterpillar/unit_scaling_gt_pose_3
+  - experiments/exp_06022020-163403/trained_models/original_3
+  - experiments/exp_06022020-165113/trained_models/original (copy)_3
+  - experiments/exp_06022020-170502/trained_models/original (another copy)_3
+  - experiments/exp_06042020-183951/trained_models/original_3
+  - experiments/exp_06042020-185005/trained_models/original_3
   num_image_pairs: 100
   required: false
 experiments:
@@ -14,7 +16,7 @@ generate_dataset:
   generate_depth: true
   image_dir: null
   meta_dir: null
-  model_path: ../data/pdc/depth_models/weights_199
+  model_path: ../data/pdc/depth_models/mono+stereo_640x192
   no_cuda: false
   original_data: logs_proto_original
   output_dir: null
@@ -25,7 +27,7 @@ generate_dataset:
   scaling_method: default_scaling
   zero_masked: false
 train:
-  dataset: experiments/exp_05262020-174446/logs_proto_default_scaling_gt_pose
+  dataset: experiments/exp_06192020-033041/logs_proto_default_scaling_gt_pose
   dataset_config_file: /home/kudo/code/config/dense_correspondence/dataset/composite/caterpillar_upright.yaml
   dimension: 3
   logging_dir: trained_models/new_new_test_caterpillar/

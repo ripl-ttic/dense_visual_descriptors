@@ -650,9 +650,18 @@ class SpartanDataset(DenseCorrespondenceDataset):
 
         image_a_depth_numpy = np.asarray(image_a_depth)
         image_b_depth_numpy = np.asarray(image_b_depth)
-        # print('depth')
-        # print(image_a_depth_numpy)
-        # print(np.max(image_a_depth))
+        
+        # return if mask size below a threshold
+        image_a_mask_numpy = np.asarray(image_a_mask)
+        image_b_mask_numpy = np.asarray(image_b_mask)
+        img_size = np.size(image_a_mask_numpy)
+        min_mask_size = 0.01*img_size
+
+        if (np.sum(image_a_mask_numpy) < min_mask_size) or (np.sum(image_b_mask_numpy) < min_mask_size):
+            logging.info("not enough pixels in mask, skipping")
+            image_a_rgb_tensor = self.rgb_image_to_tensor(image_a_rgb)
+            return self.return_empty_data(image_a_rgb_tensor, image_a_rgb_tensor)
+            
 
         if self.sample_matches_only_off_mask:
             correspondence_mask = np.asarray(image_a_mask)
@@ -664,6 +673,11 @@ class SpartanDataset(DenseCorrespondenceDataset):
                                                                             image_b_depth_numpy, image_b_pose,
                                                                             img_a_mask=correspondence_mask,
                                                                             num_attempts=self.num_matching_attempts)
+
+        # print("uv_a")
+        # print(uv_a)
+        # print("uv_b")
+        # print(uv_b)
 
         if for_synthetic_multi_object:
             return image_a_rgb, image_b_rgb, image_a_depth, image_b_depth, image_a_mask, image_b_mask, uv_a, uv_b

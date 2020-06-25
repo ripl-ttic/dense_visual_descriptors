@@ -470,19 +470,24 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
         img_a_mask = torch.from_numpy(img_a_mask).type(dtype_float)  
         
         # Option A: This next line samples from img mask
-        uv_a_vec = random_sample_from_masked_image_torch(img_a_mask, num_samples=num_attempts)
-        if uv_a_vec[0] is None:
-            return (None, None)
+        # uv_a_vec = random_sample_from_masked_image_torch(img_a_mask, num_samples=num_attempts)
+        # if uv_a_vec[0] is None:
+        #     return (None, None)
         
         # Option B: These 4 lines grab ALL from img mask
-        # mask_a = img_a_mask.squeeze(0)
-        # mask_a = mask_a/torch.max(mask_a)
-        # nonzero = (torch.nonzero(mask_a)).type(dtype_long)
-        # uv_a_vec = (nonzero[:,1], nonzero[:,0])
+        mask_a = img_a_mask.squeeze(0)
+        mask_a = mask_a/torch.max(mask_a)
+        nonzero = (torch.nonzero(mask_a)).type(dtype_long)
+        uv_a_vec = (nonzero[:,1], nonzero[:,0])
 
         # Always use this line        
         uv_a_vec_flattened = uv_a_vec[1]*image_width+uv_a_vec[0]
 
+
+    # print("uv_a_vec_flattened")
+    # print(uv_a_vec_flattened)
+    # print("uv_a_vec_flattened_length")
+    # print(len(uv_a_vec_flattened))
 
     if K is None:
         K = get_default_K_matrix()
@@ -502,10 +507,19 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     # Prune based on
     # Case 1: depth is zero (for this data, this means no-return)
     nonzero_indices = torch.nonzero(depth_vec)
-    if nonzero_indices.dim() == 0:
+    # print("nonzero_indices")
+    # print(nonzero_indices)
+    print("nonzero_indices_length")
+    print(len(nonzero_indices))
+    # print("nonzero_indices_dim")
+    # print(nonzero_indices.dim())
+    # if nonzero_indices.dim() == 0:
+    if len(nonzero_indices) == 0:
         return (None, None)
     nonzero_indices = nonzero_indices.squeeze(1)
     depth_vec = torch.index_select(depth_vec, 0, nonzero_indices)
+
+    
 
     # prune u_vec and v_vec, then multiply by already pruned depth_vec
     u_a_pruned = torch.index_select(uv_a_vec[0], 0, nonzero_indices)
@@ -550,9 +564,20 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     u2_vec = where(u2_vec < lower_bound_vec, zeros_vec, u2_vec)
     u2_vec = where(u2_vec > upper_bound_vec, zeros_vec, u2_vec)
     in_bound_indices = torch.nonzero(u2_vec)
-    if in_bound_indices.dim() == 0:
-        return (None, None)
+
+    u_in_bound_indices = in_bound_indices
+    # print("u_in_bound_indices")
+    # print(in_bound_indices)
+    print("u_in_bound_indices_length")
+    print(len(in_bound_indices))
+    # print("u_in_bound_indices_dim")
+    # print(in_bound_indices.dim())
+    # if in_bound_indices.dim() == 0:
+    # if len(in_bound_indices) == 0:
+    #     return (None, None)
     in_bound_indices = in_bound_indices.squeeze(1)
+
+    
 
     # apply pruning
     u2_vec = torch.index_select(u2_vec, 0, in_bound_indices)
@@ -571,9 +596,19 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     v2_vec = where(v2_vec < lower_bound_vec, zeros_vec, v2_vec)
     v2_vec = where(v2_vec > upper_bound_vec, zeros_vec, v2_vec)
     in_bound_indices = torch.nonzero(v2_vec)
-    if in_bound_indices.dim() == 0:
+    # print("v_in_bound_indices")
+    # print(in_bound_indices)
+    print("v_in_bound_indices_length")
+    print(len(in_bound_indices))
+    # print("v_in_bound_indices_dim")
+    # print(in_bound_indices.dim())
+    # if in_bound_indices.dim() == 0:
+    if len(in_bound_indices) == 0:
         return (None, None)
     in_bound_indices = in_bound_indices.squeeze(1)
+
+    if len(u_in_bound_indices) == 0:
+        return (None, None)
 
     # apply pruning
     u2_vec = torch.index_select(u2_vec, 0, in_bound_indices)
@@ -603,10 +638,19 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     depth2_vec = where(depth2_vec < zeros_vec, zeros_vec, depth2_vec) # to be careful, prune any negative depths
     depth2_vec = where(depth2_vec < z2_vec, zeros_vec, depth2_vec)    # prune occlusions
     non_occluded_indices = torch.nonzero(depth2_vec)
-    if non_occluded_indices.dim() == 0:
+    # print("non_occluded_indices")
+    # print(non_occluded_indices)
+    print("non_occluded_indices_length")
+    print(len(non_occluded_indices))
+    # print("non_occluded_indices_dim")
+    # print(non_occluded_indices.dim())
+    # if non_occluded_indices.dim() == 0:
+    if len(non_occluded_indices) == 0:
         return (None, None)
     non_occluded_indices = non_occluded_indices.squeeze(1)
     depth2_vec = torch.index_select(depth2_vec, 0, non_occluded_indices)
+
+    
 
     # apply pruning
     u2_vec = torch.index_select(u2_vec, 0, non_occluded_indices)

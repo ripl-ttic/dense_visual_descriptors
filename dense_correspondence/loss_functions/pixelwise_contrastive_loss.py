@@ -162,6 +162,9 @@ class PixelwiseContrastiveLoss(object):
             matches_a_descriptors = matches_a_descriptors.unsqueeze(0)
             matches_b_descriptors = matches_b_descriptors.unsqueeze(0)
 
+        print('num_matches')
+        print(num_matches)
+
         match_loss = 1.0 / num_matches * (matches_a_descriptors - matches_b_descriptors).pow(2).sum()
 
         return match_loss, matches_a_descriptors, matches_b_descriptors

@@ -301,8 +301,33 @@ class DenseCorrespondenceTraining(object):
                 blind_non_matches_a, blind_non_matches_b, \
                 metadata = data
 
+                # print("match_type")
+                # print(match_type)
+                # print("img_a")
+                # print(img_a)
+                # print("img_b")
+                # print(img_b)
+                # print("matches_a")
+                # print(matches_a)
+                # print("matches_b")
+                # print(matches_b)
+                # print("masked_non_matches_a")
+                # print(masked_non_matches_a)
+                # print("masked_non_matches_b")
+                # print(masked_non_matches_b)
+                # print("background_non_matches_a")
+                # print(background_non_matches_a)
+                # print("background_non_matches_b")
+                # print(background_non_matches_b)
+                # print("blind_non_matches_a")
+                # print(blind_non_matches_a)
+                # print("blind_non_matches_b")
+                # print(blind_non_matches_b)
+                # print("metadata")
+                # print(metadata)
+
                 if (match_type == -1).all():
-                    print "\n empty data, continuing \n"
+                    print "empty data, continuing"
                     continue
 
 

@@ -38,7 +38,7 @@ class PipeJoint:
         self.config['generate_dataset']['output_target'] = 'rendered_images'
         self.config['generate_dataset']['image_dir'] = None
         self.config['generate_dataset']['output_dir'] = None
-        self.config['generate_dataset']['model_path'] = '../data/pdc/depth_models/weights_199'
+        self.config['generate_dataset']['model_path'] = '../data/pdc/depth_models/mono+stereo_640x192'
         self.config['generate_dataset']['scaling_method'] = 'default_scaling'
         self.config['generate_dataset']['zero_masked'] = False
         self.config['generate_dataset']['ext'] = 'png'
@@ -56,14 +56,21 @@ class PipeJoint:
         self.config['train']['num_iterations'] = (1500/4)-1
         self.config['train']['dimension'] = 3
         # self.config['train']['dataset'] = "logs_proto_original"
-        self.config['train']['dataset'] = "experiments/exp_05262020-174446/logs_proto_default_scaling_gt_pose"
+        self.config['train']['dataset'] = "experiments/exp_06192020-033041/logs_proto_default_scaling_gt_pose"
+        # self.config['train']['dataset'] = "experiments/exp_05262020-174446/logs_proto_default_scaling_gt_pose"
         # self.config['train']['dataset'] = "logs_proto_unit_scaling_gt_pose"
         # self.config['train']['dataset'] = "logs_proto_default_scaling_gt_pose"
         # self.config['train']['dataset'] = None
 
         self.config['evaluate'] = {}
         self.config['evaluate']['required'] = False
-        self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3','trained_models/new_test_caterpillar/original_3','trained_models/new_test_caterpillar/unit_scaling_gt_pose_3']
+        # self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3','trained_models/new_test_caterpillar/original_3','trained_models/new_test_caterpillar/unit_scaling_gt_pose_3']
+        self.config['evaluate']['model_lst'] = ['experiments/exp_06022020-163403/trained_models/original_3']
+        self.config['evaluate']['model_lst'].append('experiments/exp_06022020-165113/trained_models/original (copy)_3')
+        self.config['evaluate']['model_lst'].append('experiments/exp_06022020-170502/trained_models/original (another copy)_3')
+        self.config['evaluate']['model_lst'].append('experiments/exp_06042020-183951/trained_models/original_3')
+        self.config['evaluate']['model_lst'].append('experiments/exp_06042020-185005/trained_models/original_3')
+
         self.config['evaluate']['num_image_pairs'] = 100
         self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
 

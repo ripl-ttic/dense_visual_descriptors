@@ -118,20 +118,23 @@ class ChangeDetection(object):
         self.depthScanners['background'] = initDepthScanner(self.app, self.views['background'],
                                                             widgetArea=QtCore.Qt.LeftDockWidgetArea)
 
-        
-        # self.changeDetectionPointCloudView = PythonQt.dd.ddQVTKWidgetView()
-        # self.changeDetectionPointCloudView.setWindowTitle('Change Detection Pointcloud')
-        # dock = self.app.app.addWidgetToDock(self.changeDetectionPointCloudView, QtCore.Qt.BottomDockWidgetArea)
-        # dock.setMinimumWidth(300)
-        # dock.setMinimumHeight(300)
+
+
+
+        # used for point cloud view
+        self.changeDetectionPointCloudView = PythonQt.dd.ddQVTKWidgetView()
+        self.changeDetectionPointCloudView.setWindowTitle('Change Detection Pointcloud')
+        dock = self.app.app.addWidgetToDock(self.changeDetectionPointCloudView, QtCore.Qt.BottomDockWidgetArea)
+        dock.setMinimumWidth(300)
+        dock.setMinimumHeight(300)
 
         # used for visualizing the depth image/mask coming from change detection
-        # self.changeDetectionImageVisualizer = imageview.ImageView()
-        # self.changeDetectionImageVisualizer.view.setWindowTitle('Depth Image Change')
-        # dock = self.app.app.addWidgetToDock(self.changeDetectionImageVisualizer.view, QtCore.Qt.BottomDockWidgetArea)
-        #
-        # dock.setMinimumWidth(300)
-        # dock.setMinimumHeight(300)
+        self.changeDetectionImageVisualizer = imageview.ImageView()
+        self.changeDetectionImageVisualizer.view.setWindowTitle('Depth Image Change')
+        dock = self.app.app.addWidgetToDock(self.changeDetectionImageVisualizer.view, QtCore.Qt.BottomDockWidgetArea)
+        
+        dock.setMinimumWidth(300)
+        dock.setMinimumHeight(300)
 
     @property
     def background_reconstruction(self):
