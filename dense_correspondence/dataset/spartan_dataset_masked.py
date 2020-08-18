@@ -587,6 +587,9 @@ class SpartanDataset(DenseCorrespondenceDataset):
     def get_rgbd_mask_pose(self, scene_name, image_idx):
         """Temporary function that oveloads the origianl one"""
 
+        data_width = self._config['single_object']['kitti']['shape']['image_width']
+        data_height = self._config['single_object']['kitti']['shape']['image_height']
+
         scene_directory = self.get_full_path_for_scene(scene_name)
 
         pose_data = self.get_pose_data(scene_name)
@@ -594,16 +597,23 @@ class SpartanDataset(DenseCorrespondenceDataset):
         rgb_filename = pose_data[image_idx]['rgb_image_filename']
         rgb_file = os.path.join(scene_directory, 'images', rgb_filename)
         rgb = Image.open(rgb_file).convert('RGB')
+
+        rgb = transforms.Resize((data_height, data_width), interpolation=Image.LANCZOS)(rgb)
+
         # print('scene name')
         # print(scene_name)
         # print('image idx')
         # print(image_idx)
+        
         # print('rgb shape')
         # print(np.asarray(rgb).shape)
 
         depth_filename = pose_data[image_idx]['depth_image_filename']
         depth_file = os.path.join(scene_directory, 'rendered_images', depth_filename)
         depth = Image.open(depth_file)
+
+        depth = transforms.Resize((data_height, data_width), interpolation=Image.LANCZOS)(depth)
+
         # print('depth shape')
         # print(np.asarray(depth).shape)
 

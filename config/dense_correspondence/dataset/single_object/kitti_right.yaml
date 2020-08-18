@@ -13,6 +13,8 @@ test:
 - "8"
 - "9"
 - "10"
-
+shape:
+  image_width: 1241
+  image_height: 376
 # evaluation_labeled_data_path: 
 # - "evaluation_labeled_data/caterpillar_cross_scene_labels.yaml"

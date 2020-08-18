@@ -19,7 +19,7 @@ import torch.optim as optim
 
 import tensorboard_logger
 
-
+from PIL import Image
 
 
 # dense correspondence
@@ -305,9 +305,15 @@ class DenseCorrespondenceTraining(object):
                     print "empty data, continuing"
                     continue
 
+                # image resize
+                # data_width = self._config['dense_correspondence_network']['image_width']
+                # data_height = self._config['dense_correspondence_network']['image_height']
+                # img_a = transforms.Resize((data_height, data_width), interpolation=Image.LANCZOS)(img_a)
+                # img_b = transforms.Resize((data_height, data_width), interpolation=Image.LANCZOS)(img_b)
+
                 # data shape check
-                N, img_a_height, image_a_width, img_a_channel = img_a.shape
-                N, img_b_height, image_b_width, img_b_channel = img_b.shape
+                N, img_a_channel, img_a_height, image_a_width = img_a.shape
+                N, img_b_channel, img_b_height, image_b_width = img_b.shape
                 data_width = self._config['dense_correspondence_network']['image_width']
                 data_height = self._config['dense_correspondence_network']['image_height']
                 if (img_a_height != data_height) or (img_b_height != data_height) or (image_a_width != data_width) or (image_b_width != data_width):
