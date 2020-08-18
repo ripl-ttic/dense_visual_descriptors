@@ -38,7 +38,7 @@ class PipeJoint:
         self.config['generate_dataset']['output_target'] = 'rendered_images'
         self.config['generate_dataset']['image_dir'] = None
         self.config['generate_dataset']['output_dir'] = None
-        self.config['generate_dataset']['model_path'] = '../data/pdc/depth_models/mono+stereo_640x192'
+        self.config['generate_dataset']['model_path'] = '../data/pdc/depth_models/weights_199'
         self.config['generate_dataset']['scaling_method'] = 'default_scaling'
         self.config['generate_dataset']['zero_masked'] = False
         self.config['generate_dataset']['ext'] = 'png'
@@ -48,19 +48,21 @@ class PipeJoint:
         
         self.config['train'] = {}
         self.config['train']['required'] = True
-        self.config['train']['dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
-                               'dataset', 'composite', 'caterpillar_upright.yaml')
+        # self.config['train']['dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
+        #                        'dataset', 'composite', 'caterpillar_upright.yaml')
+        self.config['train']['dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'kitti', 'kitti.yaml')
         self.config['train']['train_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config', 'dense_correspondence', 
                                 'training', 'training.yaml')
         self.config['train']['logging_dir'] = "trained_models/new_new_test_caterpillar/"
         self.config['train']['num_iterations'] = (1500/4)-1
         self.config['train']['dimension'] = 3
         # self.config['train']['dataset'] = "logs_proto_original"
-        self.config['train']['dataset'] = "experiments/exp_06192020-033041/logs_proto_default_scaling_gt_pose"
+        # self.config['train']['dataset'] = "experiments/exp_07232020-184440/logs_proto_default_scaling_gt_pose"
         # self.config['train']['dataset'] = "experiments/exp_05262020-174446/logs_proto_default_scaling_gt_pose"
         # self.config['train']['dataset'] = "logs_proto_unit_scaling_gt_pose"
         # self.config['train']['dataset'] = "logs_proto_default_scaling_gt_pose"
         # self.config['train']['dataset'] = None
+        self.config['train']['dataset'] = "logs_proto_kitti_left"
 
         self.config['evaluate'] = {}
         self.config['evaluate']['required'] = False

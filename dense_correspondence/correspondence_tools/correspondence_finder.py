@@ -407,7 +407,8 @@ def create_non_correspondences(uv_b_matches, img_b_shape, num_non_matches_per_ma
 # Optionally, uv_a specifies the pixels in img_a for which to find matches
 # If uv_a is not set, then random correspondences are attempted to be found
 def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b_pose, 
-                                        uv_a=None, num_attempts=20, device='CPU', img_a_mask=None, K=None):
+                                        uv_a=None, num_attempts=20, device='CPU', img_a_mask=None, K=None,
+                                        return_statistics=False):
     """
     Computes pixel correspondences in batch
 
@@ -504,20 +505,30 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     depth_vec = torch.index_select(img_a_depth_torch, 0, uv_a_vec_flattened)*1.0/DEPTH_IM_SCALE
     depth_vec = depth_vec.squeeze(1)
     
+    num_total = len(depth_vec)
+    
     # Prune based on
     # Case 1: depth is zero (for this data, this means no-return)
     nonzero_indices = torch.nonzero(depth_vec)
-    # print("nonzero_indices")
-    # print(nonzero_indices)
-    print("nonzero_indices_length")
-    print(len(nonzero_indices))
-    # print("nonzero_indices_dim")
-    # print(nonzero_indices.dim())
-    # if nonzero_indices.dim() == 0:
+    num_after_nonzero_filter = len(nonzero_indices)
+
     if len(nonzero_indices) == 0:
-        return (None, None)
+        # print("filter statistics: total number:{}, nonzero filter:{}".format(num_total,num_after_nonzero_filter))
+        if not return_statistics:
+            return (None, None)
+        else:
+            filter_statistics = {}
+            filter_statistics['number_before_filter'] = num_total
+            filter_statistics['nonzero_filter'] = num_after_nonzero_filter
+            filter_statistics['u_inbound_filter'] = 0
+            filter_statistics['v_inbound_filter'] = 0
+            filter_statistics['non_occlution_filter'] = 0
+            return (None, None, filter_statistics)
+
     nonzero_indices = nonzero_indices.squeeze(1)
     depth_vec = torch.index_select(depth_vec, 0, nonzero_indices)
+
+    
 
     
 
@@ -565,17 +576,32 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     u2_vec = where(u2_vec > upper_bound_vec, zeros_vec, u2_vec)
     in_bound_indices = torch.nonzero(u2_vec)
 
-    u_in_bound_indices = in_bound_indices
+    num_after_u_in_bound_indices_filter = len(in_bound_indices)
+
+    # u_in_bound_indices = in_bound_indices
     # print("u_in_bound_indices")
     # print(in_bound_indices)
-    print("u_in_bound_indices_length")
-    print(len(in_bound_indices))
+    # print("u_in_bound_indices_length")
+    # print(len(in_bound_indices))
     # print("u_in_bound_indices_dim")
     # print(in_bound_indices.dim())
     # if in_bound_indices.dim() == 0:
-    # if len(in_bound_indices) == 0:
-    #     return (None, None)
+    if len(in_bound_indices) == 0:
+        # print("filter statistics: total number:{}, nonzero filter:{}, u inbound filter:{}".format(num_total,num_after_nonzero_filter, num_after_u_in_bound_indices_filter))
+        if not return_statistics:
+            return (None, None)
+        else:
+            filter_statistics = {}
+            filter_statistics['number_before_filter'] = num_total
+            filter_statistics['nonzero_filter'] = num_after_nonzero_filter
+            filter_statistics['u_inbound_filter'] = num_after_u_in_bound_indices_filter
+            filter_statistics['v_inbound_filter'] = 0
+            filter_statistics['non_occlution_filter'] = 0
+            return (None, None, filter_statistics)
+        
     in_bound_indices = in_bound_indices.squeeze(1)
+
+    
 
     
 
@@ -596,19 +622,33 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     v2_vec = where(v2_vec < lower_bound_vec, zeros_vec, v2_vec)
     v2_vec = where(v2_vec > upper_bound_vec, zeros_vec, v2_vec)
     in_bound_indices = torch.nonzero(v2_vec)
+    num_after_v_in_bound_indices_filter = len(in_bound_indices)
     # print("v_in_bound_indices")
     # print(in_bound_indices)
-    print("v_in_bound_indices_length")
-    print(len(in_bound_indices))
+    # print("v_in_bound_indices_length")
+    # print(len(in_bound_indices))
     # print("v_in_bound_indices_dim")
     # print(in_bound_indices.dim())
     # if in_bound_indices.dim() == 0:
     if len(in_bound_indices) == 0:
-        return (None, None)
+        # print("filter statistics: total number:{}, nonzero filter:{}, u inbound filter:{}, v inbound filter:{}".format(num_total,num_after_nonzero_filter, num_after_u_in_bound_indices_filter, num_after_v_in_bound_indices_filter))
+        if not return_statistics:
+            return (None, None)
+        else:
+            filter_statistics = {}
+            filter_statistics['number_before_filter'] = num_total
+            filter_statistics['nonzero_filter'] = num_after_nonzero_filter
+            filter_statistics['u_inbound_filter'] = num_after_u_in_bound_indices_filter
+            filter_statistics['v_inbound_filter'] = num_after_v_in_bound_indices_filter
+            filter_statistics['non_occlution_filter'] = 0
+            return (None, None, filter_statistics)
+
     in_bound_indices = in_bound_indices.squeeze(1)
 
-    if len(u_in_bound_indices) == 0:
-        return (None, None)
+    
+
+    # if len(u_in_bound_indices) == 0:
+    #     return (None, None)
 
     # apply pruning
     u2_vec = torch.index_select(u2_vec, 0, in_bound_indices)
@@ -638,17 +678,32 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     depth2_vec = where(depth2_vec < zeros_vec, zeros_vec, depth2_vec) # to be careful, prune any negative depths
     depth2_vec = where(depth2_vec < z2_vec, zeros_vec, depth2_vec)    # prune occlusions
     non_occluded_indices = torch.nonzero(depth2_vec)
+    num_after_nonocclution_filter = len(non_occluded_indices)
     # print("non_occluded_indices")
     # print(non_occluded_indices)
-    print("non_occluded_indices_length")
-    print(len(non_occluded_indices))
+    # print("non_occluded_indices_length")
+    # print(len(non_occluded_indices))
     # print("non_occluded_indices_dim")
     # print(non_occluded_indices.dim())
     # if non_occluded_indices.dim() == 0:
     if len(non_occluded_indices) == 0:
-        return (None, None)
+        # print("filter statistics: total number:{}, nonzero filter:{}, u inbound filter:{}, v inbound filter:{}, nonocclution filter:{}".format(num_total, num_after_nonzero_filter, num_after_u_in_bound_indices_filter, num_after_v_in_bound_indices_filter, num_after_nonocclution_filter))
+        if not return_statistics:
+            return (None, None)
+        else:
+            filter_statistics = {}
+            filter_statistics['number_before_filter'] = num_total
+            filter_statistics['nonzero_filter'] = num_after_nonzero_filter
+            filter_statistics['u_inbound_filter'] = num_after_u_in_bound_indices_filter
+            filter_statistics['v_inbound_filter'] = num_after_v_in_bound_indices_filter
+            filter_statistics['non_occlution_filter'] = num_after_nonocclution_filter
+            return (None, None, filter_statistics)
+
     non_occluded_indices = non_occluded_indices.squeeze(1)
     depth2_vec = torch.index_select(depth2_vec, 0, non_occluded_indices)
+
+    
+
 
     
 
@@ -660,4 +715,15 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
 
     uv_b_vec = (u2_vec, v2_vec)
     uv_a_vec = (u_a_pruned, v_a_pruned)
-    return (uv_a_vec, uv_b_vec)
+    if not return_statistics:
+        return (uv_a_vec, uv_b_vec)
+    else:
+        filter_statistics = {}
+        filter_statistics['number_before_filter'] = num_total
+        filter_statistics['nonzero_filter'] = num_after_nonzero_filter
+        filter_statistics['u_inbound_filter'] = num_after_u_in_bound_indices_filter
+        filter_statistics['v_inbound_filter'] = num_after_v_in_bound_indices_filter
+        filter_statistics['non_occlution_filter'] = num_after_nonocclution_filter
+        return (uv_a_vec, uv_b_vec, filter_statistics)
+
+    # return (uv_a_vec, uv_b_vec)

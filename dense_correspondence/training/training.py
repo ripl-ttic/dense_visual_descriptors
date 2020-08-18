@@ -301,35 +301,19 @@ class DenseCorrespondenceTraining(object):
                 blind_non_matches_a, blind_non_matches_b, \
                 metadata = data
 
-                # print("match_type")
-                # print(match_type)
-                # print("img_a")
-                # print(img_a)
-                # print("img_b")
-                # print(img_b)
-                # print("matches_a")
-                # print(matches_a)
-                # print("matches_b")
-                # print(matches_b)
-                # print("masked_non_matches_a")
-                # print(masked_non_matches_a)
-                # print("masked_non_matches_b")
-                # print(masked_non_matches_b)
-                # print("background_non_matches_a")
-                # print(background_non_matches_a)
-                # print("background_non_matches_b")
-                # print(background_non_matches_b)
-                # print("blind_non_matches_a")
-                # print(blind_non_matches_a)
-                # print("blind_non_matches_b")
-                # print(blind_non_matches_b)
-                # print("metadata")
-                # print(metadata)
-
                 if (match_type == -1).all():
                     print "empty data, continuing"
                     continue
 
+                # data shape check
+                N, img_a_height, image_a_width, img_a_channel = img_a.shape
+                N, img_b_height, image_b_width, img_b_channel = img_b.shape
+                data_width = self._config['dense_correspondence_network']['image_width']
+                data_height = self._config['dense_correspondence_network']['image_height']
+                if (img_a_height != data_height) or (img_b_height != data_height) or (image_a_width != data_width) or (image_b_width != data_width):
+                    print('invalid shape, continuing')
+                    continue
+                
 
                 data_type = metadata["type"][0]
                 
@@ -352,9 +336,17 @@ class DenseCorrespondenceTraining(object):
 
                 # run both images through the network
                 image_a_pred = dcn.forward(img_a)
+                # print('image a shape')
+                # print(img_a.shape)
+                # print('pred image a shape')
+                # print(image_a_pred.shape)
                 image_a_pred = dcn.process_network_output(image_a_pred, batch_size)
 
                 image_b_pred = dcn.forward(img_b)
+                # print('image b shape')
+                # print(img_b.shape)
+                # print('pred image b shape')
+                # print(image_b_pred.shape)
                 image_b_pred = dcn.process_network_output(image_b_pred, batch_size)
 
                 # get loss

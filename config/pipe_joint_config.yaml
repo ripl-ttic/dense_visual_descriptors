@@ -16,7 +16,7 @@ generate_dataset:
   generate_depth: true
   image_dir: null
   meta_dir: null
-  model_path: ../data/pdc/depth_models/mono+stereo_640x192
+  model_path: ../data/pdc/depth_models/weights_199
   no_cuda: false
   original_data: logs_proto_original
   output_dir: null
@@ -27,8 +27,8 @@ generate_dataset:
   scaling_method: default_scaling
   zero_masked: false
 train:
-  dataset: experiments/exp_06192020-033041/logs_proto_default_scaling_gt_pose
-  dataset_config_file: /home/kudo/code/config/dense_correspondence/dataset/composite/caterpillar_upright.yaml
+  dataset: logs_proto_kitti_left
+  dataset_config_file: /home/kudo/code/config/kitti/kitti.yaml
   dimension: 3
   logging_dir: trained_models/new_new_test_caterpillar/
   num_iterations: 374

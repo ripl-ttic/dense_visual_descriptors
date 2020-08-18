@@ -6,6 +6,7 @@ import logging
 import glob
 import random
 import copy
+from PIL import Image
 
 import torch
 
@@ -422,6 +423,7 @@ class SpartanDataset(DenseCorrespondenceDataset):
     def get_next_img_idx(self, scene_name, idx):
         pose_data = self.get_pose_data(scene_name)
         image_idxs = pose_data.keys() # list of integers
+        image_idxs.sort()
         # random.choice(image_idxs)
         # random_idx = random.choice(image_idxs)
         next_id = image_idxs.index(idx) + 1
@@ -581,6 +583,35 @@ class SpartanDataset(DenseCorrespondenceDataset):
         metadata["type"] = SpartanDatasetDataType.MULTI_OBJECT
 
         return self.get_within_scene_data(scene_name, metadata)
+    
+    def get_rgbd_mask_pose(self, scene_name, image_idx):
+        """Temporary function that oveloads the origianl one"""
+
+        scene_directory = self.get_full_path_for_scene(scene_name)
+
+        pose_data = self.get_pose_data(scene_name)
+
+        rgb_filename = pose_data[image_idx]['rgb_image_filename']
+        rgb_file = os.path.join(scene_directory, 'images', rgb_filename)
+        rgb = Image.open(rgb_file).convert('RGB')
+        # print('scene name')
+        # print(scene_name)
+        # print('image idx')
+        # print(image_idx)
+        # print('rgb shape')
+        # print(np.asarray(rgb).shape)
+
+        depth_filename = pose_data[image_idx]['depth_image_filename']
+        depth_file = os.path.join(scene_directory, 'rendered_images', depth_filename)
+        depth = Image.open(depth_file)
+        # print('depth shape')
+        # print(np.asarray(depth).shape)
+
+        mask = np.ones(np.asarray(depth).shape)
+
+        pose = self.get_pose_from_scene_name_and_idx(scene_name, image_idx)
+
+        return rgb, depth, mask, pose
 
     def get_within_scene_data(self, scene_name, metadata, for_synthetic_multi_object=False):
         """
@@ -638,10 +669,12 @@ class SpartanDataset(DenseCorrespondenceDataset):
         metadata['image_a_idx'] = image_a_idx
 
         # image b
-        image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+        # image_b_idx = self.get_img_idx_with_different_pose(scene_name, image_a_pose, num_attempts=50)
+        image_b_idx = self.get_next_img_idx(scene_name, image_a_idx)
         metadata['image_b_idx'] = image_b_idx
         if image_b_idx is None:
-            logging.info("no frame with sufficiently different pose found, returning")
+            # logging.info("no frame with sufficiently different pose found, returning")
+            logging.info("reaches the end of the image list")
             # TODO: return something cleaner than no-data
             image_a_rgb_tensor = self.rgb_image_to_tensor(image_a_rgb)
             return self.return_empty_data(image_a_rgb_tensor, image_a_rgb_tensor)
@@ -669,15 +702,21 @@ class SpartanDataset(DenseCorrespondenceDataset):
             correspondence_mask = None
 
         # find correspondences
-        uv_a, uv_b = correspondence_finder.batch_find_pixel_correspondences(image_a_depth_numpy, image_a_pose,
+        uv_a, uv_b, filter_statistics = correspondence_finder.batch_find_pixel_correspondences(image_a_depth_numpy, image_a_pose,
                                                                             image_b_depth_numpy, image_b_pose,
                                                                             img_a_mask=correspondence_mask,
-                                                                            num_attempts=self.num_matching_attempts)
-
-        # print("uv_a")
-        # print(uv_a)
-        # print("uv_b")
-        # print(uv_b)
+                                                                            num_attempts=self.num_matching_attempts,
+                                                                            return_statistics=True)
+    
+        # filter_statistics['number_before_filter'] = num_total
+        # filter_statistics['nonzero_filter'] = num_after_nonzero_filter
+        # filter_statistics['u_inbound_filter'] = num_after_u_in_bound_indices_filter
+        # filter_statistics['v_inbound_filter'] = num_after_v_in_bound_indices_filter
+        # filter_statistics['non_occlution_filter'] = 0
+        print("scene:{}, indices: {},{}; num_before_filter:{}, nonzero_filter:{}, u_inbound_filter:{}, v_inbound_filter:{}, non_occlution_filter:{}".format(scene_name, image_a_idx, image_b_idx,
+                filter_statistics['number_before_filter'], filter_statistics['nonzero_filter'],
+                filter_statistics['u_inbound_filter'], filter_statistics['v_inbound_filter'],
+                filter_statistics['non_occlution_filter']))
 
         if for_synthetic_multi_object:
             return image_a_rgb, image_b_rgb, image_a_depth, image_b_depth, image_a_mask, image_b_mask, uv_a, uv_b
@@ -690,19 +729,19 @@ class SpartanDataset(DenseCorrespondenceDataset):
 
 
         # data augmentation
-        if self._domain_randomize:
-            image_a_rgb = correspondence_augmentation.random_domain_randomize_background(image_a_rgb, image_a_mask)
-            image_b_rgb = correspondence_augmentation.random_domain_randomize_background(image_b_rgb, image_b_mask)
+        # if self._domain_randomize:
+        #     image_a_rgb = correspondence_augmentation.random_domain_randomize_background(image_a_rgb, image_a_mask)
+        #     image_b_rgb = correspondence_augmentation.random_domain_randomize_background(image_b_rgb, image_b_mask)
 
-        if not self.debug:
-            [image_a_rgb, image_a_mask], uv_a = correspondence_augmentation.random_image_and_indices_mutation([image_a_rgb, image_a_mask], uv_a)
-            [image_b_rgb, image_b_mask], uv_b = correspondence_augmentation.random_image_and_indices_mutation(
-                [image_b_rgb, image_b_mask], uv_b)
-        else:  # also mutate depth just for plotting
-            [image_a_rgb, image_a_depth, image_a_mask], uv_a = correspondence_augmentation.random_image_and_indices_mutation(
-                [image_a_rgb, image_a_depth, image_a_mask], uv_a)
-            [image_b_rgb, image_b_depth, image_b_mask], uv_b = correspondence_augmentation.random_image_and_indices_mutation(
-                [image_b_rgb, image_b_depth, image_b_mask], uv_b)
+        # if not self.debug:
+        #     [image_a_rgb, image_a_mask], uv_a = correspondence_augmentation.random_image_and_indices_mutation([image_a_rgb, image_a_mask], uv_a)
+        #     [image_b_rgb, image_b_mask], uv_b = correspondence_augmentation.random_image_and_indices_mutation(
+        #         [image_b_rgb, image_b_mask], uv_b)
+        # else:  # also mutate depth just for plotting
+        #     [image_a_rgb, image_a_depth, image_a_mask], uv_a = correspondence_augmentation.random_image_and_indices_mutation(
+        #         [image_a_rgb, image_a_depth, image_a_mask], uv_a)
+        #     [image_b_rgb, image_b_depth, image_b_mask], uv_b = correspondence_augmentation.random_image_and_indices_mutation(
+        #         [image_b_rgb, image_b_depth, image_b_mask], uv_b)
 
         image_a_depth_numpy = np.asarray(image_a_depth)
         image_b_depth_numpy = np.asarray(image_b_depth)
