@@ -62,19 +62,20 @@ class PipeJoint:
         # self.config['train']['dataset'] = "logs_proto_unit_scaling_gt_pose"
         # self.config['train']['dataset'] = "logs_proto_default_scaling_gt_pose"
         # self.config['train']['dataset'] = None
-        self.config['train']['dataset'] = "logs_proto_kitti_left"
+        self.config['train']['dataset'] = "logs_proto_kitti_raw"
 
         self.config['evaluate'] = {}
         self.config['evaluate']['required'] = False
         # self.config['evaluate']['model_lst'] = ['trained_models/new_test_caterpillar/default_scaling_gt_pose_3','trained_models/new_test_caterpillar/original_3','trained_models/new_test_caterpillar/unit_scaling_gt_pose_3']
-        self.config['evaluate']['model_lst'] = ['experiments/exp_06022020-163403/trained_models/original_3']
-        self.config['evaluate']['model_lst'].append('experiments/exp_06022020-165113/trained_models/original (copy)_3')
-        self.config['evaluate']['model_lst'].append('experiments/exp_06022020-170502/trained_models/original (another copy)_3')
-        self.config['evaluate']['model_lst'].append('experiments/exp_06042020-183951/trained_models/original_3')
-        self.config['evaluate']['model_lst'].append('experiments/exp_06042020-185005/trained_models/original_3')
+        self.config['evaluate']['model_lst'] = ['experiments/exp_08202020-152733/trained_models/kitti_whole_3']
+        self.config['evaluate']['model_lst'].append('experiments/exp_08202020-155210/trained_models/kitti_left_3')
+        self.config['evaluate']['model_lst'].append('experiments/exp_08202020-161940/trained_models/kitti_right_3')
+
 
         self.config['evaluate']['num_image_pairs'] = 100
-        self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
+        self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'kitti_whole.yaml')
+        # self.config['evaluate']['gt_dataset_config_file'] = os.path.join(utils.getDenseCorrespondenceSourceDir(), 'config','dense_correspondence', 'evaluation', 'gt_dataset.yaml')
+
 
         self.config['experiments'] = {}
         self.config['experiments']['as_experiment'] = True
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     args = parse_args()
     pipe_joint = PipeJoint(args.config_path)
     pipe_joint.save_config() 
-    pipe_joint.get_config(verbose=True)
+    pipe_joint.get_config(verbose=False)
     pipe_joint.execute()
 
 

@@ -31,7 +31,7 @@ def evaulate_model(model_lst, output_dir=None, num_image_pairs=100, gt_dataset_c
         print("evaluate model {}".format(subdir))
         start_time = time.time()
         output_subdir = os.path.join(utils.get_data_dir(), output_dir, subdir.split('/')[-1])
-        DCE.run_evaluation_on_network(model_folder=subdir, 
+        DCE.run_evaluation_on_network(model_folder=subdir, compute_descriptor_statistics=True, cross_scene=False,
             output_dir=output_subdir, num_image_pairs=num_image_pairs,dataset=gt_dataset)
         end_time = time.time()
         print("evaluation takes %.2f seconds" %(end_time - start_time))

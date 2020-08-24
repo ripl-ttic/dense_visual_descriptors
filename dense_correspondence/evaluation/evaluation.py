@@ -1921,6 +1921,32 @@ class DenseCorrespondenceEvaluation(object):
                 plt.show()
 
 
+    @staticmethod
+    def get_consecutive_image_pairs(dataset, num_image_pairs=5, scene_name=None):
+        """
+        Given a dataset, if scene_name is given, then choose a number of 
+        consecutive image pairs from that scene, otherwise, randomly sample scenes
+        to choose image pair from.
+        """
+        input_scene_name = scene_name
+        scene_names = []
+        img_pairs = []
+
+        for _ in range(num_image_pairs):
+
+            if input_scene_name is not None:
+                scene_name = input_scene_name
+            else:
+                scene_name = dataset.get_random_scene_name()
+
+            img_a_idx = dataset.get_random_image_index(scene_name)
+            img_b_idx = dataset.get_next_img_idx(scene_name, img_a_idx)
+
+            img_pairs.append([img_a_idx, img_b_idx])
+            scene_names.append(scene_name)
+
+        return scene_names, img_pairs
+
     @staticmethod 
     def get_random_image_pairs(dataset):
         """
@@ -1984,6 +2010,8 @@ class DenseCorrespondenceEvaluation(object):
         print "\n\n-----------Train Data Evaluation----------------"
         if randomize:
             scene_names, img_pairs = DenseCorrespondenceEvaluation.get_random_scenes_and_image_pairs(dataset)
+        elif scene_type == 'kitti':
+            scene_names, img_pairs = DenseCorrespondenceEvaluation.get_consecutive_image_pairs(dataset, num_image_pairs)
         else:
             if scene_type == "caterpillar":
                 scene_name = '2018-04-10-16-06-26'
@@ -2005,7 +2033,7 @@ class DenseCorrespondenceEvaluation(object):
             scene_names = [scene_name]*len(img_pairs)
 
         for scene_name, img_pair in zip(scene_names, img_pairs):
-            print "Image pair (%d, %d)" %(img_pair[0], img_pair[1])
+            # print "Image pair (%d, %d)" %(img_pair[0], img_pair[1])
             DenseCorrespondenceEvaluation.single_same_scene_image_pair_qualitative_analysis(dcn,
                                                                                  dataset,
                                                                                  scene_name,
@@ -2017,6 +2045,8 @@ class DenseCorrespondenceEvaluation(object):
         dataset.set_test_mode()
         if randomize:
             scene_names, img_pairs = DenseCorrespondenceEvaluation.get_random_scenes_and_image_pairs(dataset)
+        elif scene_type == 'kitti':
+            scene_names, img_pairs = DenseCorrespondenceEvaluation.get_consecutive_image_pairs(dataset, num_image_pairs)
         else:
             if scene_type == "caterpillar":
                 scene_name = '2018-04-10-16-08-46'
@@ -2272,7 +2302,18 @@ class DenseCorrespondenceEvaluation(object):
             img_tensor = dataset.rgb_image_to_tensor(rgb)
             res = dcn.forward_single_image_tensor(img_tensor)  # [H, W, D]
 
+            # print('mask')
+            # print(mask)
+            # print(mask.shape)
+            if isinstance(mask, np.ndarray):
+                if len(np.shape(mask)) == 2:
+                    mask = np.expand_dims(mask, axis=0)
+
             mask_tensor = to_tensor(mask).cuda()
+
+            # print('mask tensor')
+            # print(mask_tensor)
+            # print(mask_tensor.shape)
             entire_image_stats, mask_image_stats = compute_descriptor_statistics(res, mask_tensor)
 
 
@@ -2919,6 +2960,7 @@ class DenseCorrespondenceEvaluationPlotter(object):
         else:
             use_masked_plots = True
 
+        use_masked_plots = False
 
         if previous_fig_axes==None:
             N = 5

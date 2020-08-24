@@ -1,6 +1,6 @@
 logs_root_path: logs_proto
 
 single_object_scenes_config_files:
-- kitti_left.yaml
+- kitti_raw.yaml
 
 multi_object_scenes_config_files: []

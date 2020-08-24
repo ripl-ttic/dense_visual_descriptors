@@ -4,8 +4,14 @@ params:
 
 networks:
   caterpillar_3:
-    path_to_network_params: /home/kudo/data/pdc/trained_models/tutorials/caterpillar_3/003000.pth    
-    
+    path_to_network_params: /home/kudo/data/pdc/trained_models/tutorials/caterpillar_3/003000.pth
+  kitti_whole_3:
+    path_to_network_params: /home/kudo/data/pdc/experiments/exp_08202020-152733/trained_models/kitti_whole_3/000375.pth
+  kitti_left_3:
+    path_to_network_params: /home/kudo/data/pdc/experiments/exp_08202020-155210/trained_models/kitti_left_3/000375.pth
+  kitti_left_3:
+    path_to_network_params: /home/kudo/data/pdc/experiments/exp_08202020-161940/trained_models/kitti_right_3/000375.pth
+
 dataset: [] # which dataset to use, not used for now
 
 output_dir: analysis

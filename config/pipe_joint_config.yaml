@@ -1,11 +1,9 @@
 evaluate:
-  gt_dataset_config_file: /home/kudo/code/config/dense_correspondence/evaluation/gt_dataset.yaml
+  gt_dataset_config_file: /home/kudo/code/config/dense_correspondence/evaluation/kitti_whole.yaml
   model_lst:
-  - experiments/exp_06022020-163403/trained_models/original_3
-  - experiments/exp_06022020-165113/trained_models/original (copy)_3
-  - experiments/exp_06022020-170502/trained_models/original (another copy)_3
-  - experiments/exp_06042020-183951/trained_models/original_3
-  - experiments/exp_06042020-185005/trained_models/original_3
+  - experiments/exp_08202020-152733/trained_models/kitti_whole_3
+  - experiments/exp_08202020-155210/trained_models/kitti_left_3
+  - experiments/exp_08202020-161940/trained_models/kitti_right_3
   num_image_pairs: 100
   required: false
 experiments:
@@ -27,7 +25,7 @@ generate_dataset:
   scaling_method: default_scaling
   zero_masked: false
 train:
-  dataset: logs_proto_kitti_left
+  dataset: logs_proto_kitti_raw
   dataset_config_file: /home/kudo/code/config/kitti/kitti.yaml
   dimension: 3
   logging_dir: trained_models/new_new_test_caterpillar/

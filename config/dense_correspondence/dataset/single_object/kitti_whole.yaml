@@ -1,0 +1,32 @@
+logs_root_path: logs_proto_kitti_whole
+object_id: "kitti"
+train:
+- "002"
+- "003"
+- "012"
+- "013"
+- "022"
+- "023"
+- "032"
+- "033"
+- "042"
+- "043"
+- "052"
+- "053"
+- "062"
+- "063"
+- "072"
+- "073"
+test:
+- "082"
+- "083"
+- "092"
+- "093"
+- "102"
+- "103"
+shape:
+  image_width: 1241
+  image_height: 376
+  
+# evaluation_labeled_data_path: 
+# - "evaluation_labeled_data/caterpillar_cross_scene_labels.yaml"

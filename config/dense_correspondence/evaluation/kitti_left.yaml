@@ -1,0 +1,27 @@
+logs_root_path: logs_proto_kitti_left
+multi_object:
+  evaluation_labeled_data_path: []
+  test: []
+  train: []
+single_object:
+  kitti:
+    # evaluation_labeled_data_path:
+    # - evaluation_labeled_data/caterpillar_cross_scene_labels.yaml
+    logs_root_path: logs_proto_kitti_left
+    object_id: kitti
+    train:
+    - "0"
+    - "1"
+    - "2"
+    - "3"
+    - "4"
+    - "5"
+    - "6"
+    - "7"
+    test:
+    - "8"
+    - "9"
+    - "10"
+    shape:
+      image_width: 1241
+      image_height: 376

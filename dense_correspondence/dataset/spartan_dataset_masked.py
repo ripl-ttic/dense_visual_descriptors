@@ -416,7 +416,7 @@ class SpartanDataset(DenseCorrespondenceDataset):
         """
         pose_data = self.get_pose_data(scene_name)
         image_idxs = pose_data.keys() # list of integers
-        random.choice(image_idxs)
+        # random.choice(image_idxs)
         random_idx = random.choice(image_idxs)
         return random_idx
 
@@ -587,6 +587,8 @@ class SpartanDataset(DenseCorrespondenceDataset):
     def get_rgbd_mask_pose(self, scene_name, image_idx):
         """Temporary function that oveloads the origianl one"""
 
+        print("scene:{}, image_idx:{}".format(scene_name, image_idx))
+
         data_width = self._config['single_object']['kitti']['shape']['image_width']
         data_height = self._config['single_object']['kitti']['shape']['image_height']
 
@@ -600,22 +602,14 @@ class SpartanDataset(DenseCorrespondenceDataset):
 
         rgb = transforms.Resize((data_height, data_width), interpolation=Image.LANCZOS)(rgb)
 
-        # print('scene name')
-        # print(scene_name)
-        # print('image idx')
-        # print(image_idx)
-        
-        # print('rgb shape')
-        # print(np.asarray(rgb).shape)
+
+        print("image idx: {}".format(image_idx))
 
         depth_filename = pose_data[image_idx]['depth_image_filename']
         depth_file = os.path.join(scene_directory, 'rendered_images', depth_filename)
         depth = Image.open(depth_file)
 
         depth = transforms.Resize((data_height, data_width), interpolation=Image.LANCZOS)(depth)
-
-        # print('depth shape')
-        # print(np.asarray(depth).shape)
 
         mask = np.ones(np.asarray(depth).shape)
 

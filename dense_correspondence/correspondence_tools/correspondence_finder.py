@@ -671,7 +671,8 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
     depth2_vec = depth2_vec.squeeze(1)
 
     # occlusion margin, in meters
-    occlusion_margin = 0.003
+    # occlusion_margin = 0.003
+    occlusion_margin = 0.1
     z2_vec = z2_vec - occlusion_margin
     zeros_vec = torch.zeros_like(depth2_vec)
 
