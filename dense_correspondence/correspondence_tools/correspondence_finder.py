@@ -672,12 +672,14 @@ def batch_find_pixel_correspondences(img_a_depth, img_a_pose, img_b_depth, img_b
 
     # occlusion margin, in meters
     # occlusion_margin = 0.003
-    occlusion_margin = 0.1
-    z2_vec = z2_vec - occlusion_margin
+    # occlusion_margin = 0.1
+    occlusion_relative_margin = 0.5
+    # z2_vec = z2_vec - occlusion_margin
     zeros_vec = torch.zeros_like(depth2_vec)
 
     depth2_vec = where(depth2_vec < zeros_vec, zeros_vec, depth2_vec) # to be careful, prune any negative depths
     depth2_vec = where(depth2_vec < z2_vec, zeros_vec, depth2_vec)    # prune occlusions
+    depth2_vec = where(np.abs(depth2_vec - z2_vec) > occlusion_relative_margin * (depth2_vec + z2_vec), zeros_vec, depth2_vec)
     non_occluded_indices = torch.nonzero(depth2_vec)
     num_after_nonocclution_filter = len(non_occluded_indices)
     # print("non_occluded_indices")
